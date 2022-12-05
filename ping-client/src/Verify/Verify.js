@@ -26,6 +26,7 @@ const Verify = (props) => {
               message: "Error",
               description: "Failed to authorize user!!",
             });
+            localStorage.clear("authorized");
           });
     }
 

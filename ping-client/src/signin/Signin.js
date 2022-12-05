@@ -18,6 +18,10 @@ const Signin = (props) => {
   const send = localStorage.getItem("senderFirstName") || "";
   let senderId = 0;
   useEffect(() => {
+    const verified = localStorage.getItem("authorized");
+    if(verified === null) {
+      props.history.push("/");
+    } 
     getUsers();
     getSenderDetails();
     setMessages([]);
