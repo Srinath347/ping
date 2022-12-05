@@ -1,10 +1,7 @@
 import React from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Signin from "./signin/Signin";
-import Signup from "./signup/Signup";
-import Profile from "./profile/Profile";
 import Chat from "./chat/Chat";
-import Users from "./users/Users";
 import Verify from "./Verify/Verify";
 import "./App.css";
 
@@ -19,11 +16,6 @@ const App = (props) => {
             exact
             path="/chat"
             render={(props) => <Signin {...props} />}
-          />
-          <Route
-            exact
-            path="/users"
-            render={(props) => <Users {...props} />}
           />
           <Route exact path="/chatroom" render={(props) => <Chat {...props} />} />
         </Switch>
