@@ -31,7 +31,6 @@ const Chat = (props) => {
   const count = sessionStorage.getItem("byeCount") || 0;
 
   useEffect(() => {
-    
     if (localStorage.getItem("sender") === null) {
       props.history.push("/chat");
     }

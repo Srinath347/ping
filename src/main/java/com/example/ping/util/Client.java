@@ -11,11 +11,12 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Client {
 
-    private static String keyFilePath = "/Users/srinath/Desktop/ping/keys/%s.key";
+    private static String keyFilePath = "/Users/shejomathew/Desktop/ping/keys/%s.key";
 
     static HashMap<Integer, User> userData;
 
@@ -118,6 +119,11 @@ public class Client {
             return validUser;
         }
         return validUser;
+    }
+
+    public static Optional<User> getUserByName(String name) {
+        Optional<User> users = userData.values().stream().filter((user) ->user.getFirstName().equalsIgnoreCase(name)).findFirst();
+        return users;
     }
 
     public static PublicKey getPublicKeyByFirstName(String firstName) {

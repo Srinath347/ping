@@ -31,7 +31,7 @@ public class UserAuthController {
         return ResponseEntity.ok(signInDetails);
     }
 
-    @GetMapping("/verify")
+    @PostMapping("/verify")
     @ResponseBody
     public ResponseEntity<List<User>> verifyUserSignature(@RequestBody VerifyUser verifyUser) {
         List<User> users = userSignInService.verify(verifyUser);
