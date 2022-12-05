@@ -11,11 +11,8 @@ import java.util.Optional;
 @Service
 public class ChatMessageService {
 
-//    @Autowired
-//    private ChatMessageRepository repository;
     @Autowired
     private ChatRoomService chatRoomService;
-//    @Autowired private MongoOperations mongoOperations;
 
 
     public String getChatId(ChatMessage chatMessage) {
@@ -26,7 +23,6 @@ public class ChatMessageService {
         System.out.println("ChatId create: " + chatMessage.getChatId());
         chatMessage.setStatus(MessageStatus.RECEIVED);
         ChatUtil.save(chatMessage);
-//        repository.save(chatMessage);
         return chatMessage;
     }
 
