@@ -20,8 +20,6 @@ public class AuthUtil {
         private static String keyFilePath = "/Users/shejomathew/Desktop/ping/privateKeys/%s.key";
 
         public static String userSignIn(String userName) throws Exception {
-//            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-//            String userName = bufferedReader.readLine();
             URL url = new URL("http://localhost:8080/signin/"+userName);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -35,8 +33,6 @@ public class AuthUtil {
 
             int nonce = decrypt(userName, content.toString());
             nonce+=1;
-            System.out.println(nonce);
-//            System.out.println("verifying: " + signNonceAndVerifyWithServer(userName, nonce+""));
             return signNonceAndVerifyWithServer(userName, nonce+"");
         }
 
@@ -48,7 +44,6 @@ public class AuthUtil {
                 byte[] secretMessageBytes = Base64.getDecoder().decode(nonce);
                 byte[] decryptedMessageBytes = decryptCipher.doFinal(secretMessageBytes);
                 int decryptedMessage = Integer.parseInt(new String(decryptedMessageBytes, StandardCharsets.UTF_8));
-                System.out.println(decryptedMessage);
                 return decryptedMessage;
             } catch (Exception exception) {
                 System.out.println("Unable to decrypt the message "+ exception.getLocalizedMessage());
@@ -58,7 +53,6 @@ public class AuthUtil {
 
         private static PrivateKey getPrivateKey(String firstName) throws Exception {
             String fileName = String.format(keyFilePath, firstName);
-            System.out.println("Fetching key from: "+ fileName);
             File privateKeyFile = new File(fileName);
             byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -68,7 +62,6 @@ public class AuthUtil {
         }
 
         private static String signNonceAndVerifyWithServer(String userName, String nonce) throws Exception {
-            System.out.println("nonce here: " + nonce);
             PrivateKey privateKey = getPrivateKey(userName);
             Signature privateSignature = Signature.getInstance("SHA256withRSA");
             privateSignature.initSign(privateKey);
@@ -76,8 +69,6 @@ public class AuthUtil {
             byte[] signature = privateSignature.sign();
 
             String signedString = Base64.getEncoder().encodeToString(signature);
-            System.out.println(nonce);
-            System.out.println("here \n" + signedString);
             Auth auth = new Auth();
             auth.setNonce(nonce);
             auth.setSignature(signedString);
@@ -85,7 +76,6 @@ public class AuthUtil {
             URL url = new URL("http://localhost:8080/verify");
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
-            System.out.println("Connecting..... ");
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setRequestProperty("Accept", "application/json");
             urlConnection.setDoOutput(true);
@@ -96,10 +86,6 @@ public class AuthUtil {
             } catch (Exception exception) {
                 System.out.println(exception);
             }
-//
-//            OutputStream os = urlConnection.getOutputStream();
-//            os.write(jsonInputString.getBytes("UTF-8"));
-//            os.close();
 
             try(OutputStream os = urlConnection.getOutputStream()) {
                 byte[] input = jsonInputString.getBytes("utf-8");
@@ -113,14 +99,12 @@ public class AuthUtil {
             while ((inputLine = in.readLine()) != null) {
                 content.append(inputLine);
             }
-//            in.close();
-            System.out.println("content: " + content.toString());
+            in.close();
             return content.toString();
         }
 
         private static String createJSONInputString(Auth auth) throws JsonProcessingException {
             ObjectMapper objectMapper = new ObjectMapper();
-            System.out.println("Converting to string" + objectMapper.writeValueAsString(auth));
             return objectMapper.writeValueAsString(auth);
         }
 }
