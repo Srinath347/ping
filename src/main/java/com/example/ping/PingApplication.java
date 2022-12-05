@@ -8,9 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class PingApplication {
 
 	public static void main(String[] args) {
-
-		SpringApplication.run(PingApplication.class, args);
 		Client.getAllUsers();
+		SpringApplication.run(PingApplication.class, args);
 	}
 
 }

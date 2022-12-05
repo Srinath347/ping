@@ -2,15 +2,21 @@ package com.example.ping.util;
 
 import com.example.ping.model.User;
 import com.example.ping.model.UserBasic;
-import jakarta.annotation.PostConstruct;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Client {
+
+    private static String keyFilePath = "/Users/srinath/Desktop/ping/keys/%s.key";
 
     static HashMap<Integer, User> userData;
 
@@ -25,22 +31,20 @@ public class Client {
 
         System.out.println("Initializing user data");
         userData = new HashMap<>();
-        userData.put(1, userBuilder("john", "doe" ));
-        userData.put(2, userBuilder("Srinath", "Reddy" ));
-        userData.put(3, userBuilder("Sanjana", "Thomas" ));
-        userData.put(4, userBuilder("Mathew", "Shejo" ));
-        userData.put(5, userBuilder("Aishwarya", "Donekal"));
+        userData.put(1, userBuilder("john", "doe", 1));
+        userData.put(2, userBuilder("Srinath", "Reddy", 2 ));
+        userData.put(3, userBuilder("Sanjana", "Thomas", 3 ));
+        userData.put(4, userBuilder("Mathew", "Shejo", 4 ));
+        userData.put(5, userBuilder("Aishwarya", "Donekal", 5));
         System.out.println("user data initialized: " + userData.toString());
     }
 
-    private static User userBuilder(String firstName, String lastName) {
+    private static User userBuilder(String firstName, String lastName, int id) {
         return User.builder()
+                .id(id)
                 .firstName(firstName)
                 .lastName(lastName)
                 .isIdle(true)
-                .privateKey(getPrivateKey(firstName))
-                .publicKey(getSecretKey(lastName))
-                .secret(getSecretKey(firstName))
                 .build();
     }
 
@@ -158,5 +162,19 @@ public class Client {
         return "";
     }
 
+    public static PublicKey getPublicKeyByFirstName(String firstName) {
+        try {
+            String fileName = String.format(keyFilePath, firstName);
+            System.out.println("Fetching key from: "+ fileName);
+            File publicKeyFile = new File(fileName);
+            byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+            return keyFactory.generatePublic(publicKeySpec);
+        } catch (Exception exception) {
+            System.out.println("Could not find or load key, please try again"+ exception.getLocalizedMessage());
+        }
+        return null;
+    }
 
 }

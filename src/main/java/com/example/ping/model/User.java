@@ -15,7 +15,4 @@ public class User {
     private String firstName;
     private String lastName;
     private boolean isIdle;
-    private String publicKey;
-    private String privateKey;
-    private String secret;
 }
