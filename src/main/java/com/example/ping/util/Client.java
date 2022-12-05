@@ -1,10 +1,13 @@
 package com.example.ping.util;
 
 import com.example.ping.model.User;
+import com.example.ping.model.UserBasic;
+import jakarta.annotation.PostConstruct;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Client {
@@ -12,7 +15,7 @@ public class Client {
     static HashMap<Integer, User> userData;
 
     public static List<User> getAllUsers() {
-        if (userData.isEmpty()) {
+        if (userData == null || userData.isEmpty()) {
             initialize();
         }
         return new ArrayList<>(userData.values());
@@ -41,8 +44,54 @@ public class Client {
                 .build();
     }
 
-    public static List<User> getAllIdleUsers() {
-        return userData.values().stream().filter(User::isIdle).collect(Collectors.toList());
+    public static List<UserBasic> getAllIdleUsers() {
+        List<User> idleUsers= new ArrayList<>(userData.values().stream().filter(User::isIdle).collect(Collectors.toList()));
+        List<UserBasic> usersList = new ArrayList<>();
+        idleUsers.stream().forEach(idleUser -> {
+            UserBasic user = new UserBasic();
+            user.setId(idleUser.getId());
+            user.setIdle(idleUser.isIdle());
+            user.setFirstName(idleUser.getFirstName());
+            user.setLastName(idleUser.getLastName());
+            usersList.add(user);
+        });
+        return usersList;
+    }
+
+    public static UserBasic verifyValidUser(int id) {
+        UserBasic validUser = new UserBasic();
+        if(userData.containsKey(id)) {
+            if(userData.get(id).isIdle()) {
+                User user = userData.get(id);
+                validUser.setId(id);
+                validUser.setIdle(user.isIdle());
+                validUser.setFirstName(user.getFirstName());
+                validUser.setLastName(user.getLastName());
+                return validUser;
+            }
+        }
+        return null;
+    }
+
+    public static UserBasic updateUserStatus(int id, String status) {
+        UserBasic validUser = new UserBasic();
+
+        if(userData.containsKey(id)) {
+            User user = userData.get(id);
+            if (status.equalsIgnoreCase("busy")) {
+                user.setIdle(false);
+            }
+            else if (status.equalsIgnoreCase("idle")) {
+                user.setIdle(true);
+            }
+            userData.put(id, user);
+            validUser.setId(id);
+            validUser.setIdle(user.isIdle());
+            validUser.setFirstName(user.getFirstName());
+            validUser.setLastName(user.getLastName());
+            return validUser;
+        }
+        return null;
     }
 
     public static void setUserStatus(int id, boolean status) {
@@ -53,6 +102,19 @@ public class Client {
         User user = userData.get(id);
         user.setIdle(status);
         userData.put(id, user);
+    }
+
+    public static UserBasic getUserById(int id) {
+        UserBasic validUser = new UserBasic();
+        if(userData.containsKey(id)) {
+            User user = userData.get(id);
+            validUser.setId(id);
+            validUser.setIdle(user.isIdle());
+            validUser.setFirstName(user.getFirstName());
+            validUser.setLastName(user.getLastName());
+            return validUser;
+        }
+        return validUser;
     }
 
     private static String getPrivateKey(String firstName) {
