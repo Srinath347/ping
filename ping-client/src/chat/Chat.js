@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, message, notification } from "antd";
+import hmacSHA512 from 'crypto-js/hmac-sha512';
+import Base64 from 'crypto-js/enc-base64';
 
 import {
   getUsers,
@@ -19,6 +21,8 @@ import "./Chat.css";
 import { List } from "rc-field-form";
 
 var stompClient = null;
+var CryptoJS = require("crypto-js");
+const dynamicValue = '12/05/2022';
 const Chat = (props) => {
   // const currentUser = useRecoilValue(loggedInUser);
   const [text, setText] = useState("");
@@ -111,25 +115,29 @@ const Chat = (props) => {
   };
 
   const onMessageReceived = (msg) => {
-    console.log("message: ", msg);
-    // isNewChat(false);
+
     const chat = JSON.parse(msg.body);
-    console.log("messge received: " + sender.id, chat.senderId);
+    const privateKey = '${dynamicValue} SnE84qGioc4Js';
+    console.log("message received: " + sender.id, chat.senderId);
     if (receiver.id == chat.senderId) {
-        const message = chat.content;
+        const hashMsg = Base64.stringify(hmacSHA512(chat.content, privateKey));
+        if (hashMsg !== chat.hash)  {
+            console.log("Security Breach!! Hash authentication failed");
+        }
+        const bytes = CryptoJS.AES.decrypt(chat.content, privateKey);
+        const message = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
         const formattedMessage = {
           senderId: chat.senderId,
           recipientId: chat.recipientId,
           senderName: sender.firstName + " " + sender.lastName,
           recipientName: receiver.firstName + " " + receiver.lastName,
-          content: chat.content,
+          content: message,
           timestamp: chat.timestamp,
         };
-        
+        console.log("message: ", message);
         if(message.toLowerCase() == "bye") {
           console.log("unsubscribing", msg.headers.subscription);
-          stompClient.unsubscribe(msg.headers.subscription);  
-          // count = count +1;
+          stompClient.unsubscribe(msg.headers.subscription);
           let count = parseInt(sessionStorage.getItem("byeCount") || 0);
           sessionStorage.setItem("byeCount", count+1);
         }
@@ -143,6 +151,7 @@ const Chat = (props) => {
   };
 
   const sendMessage = (msg) => {
+  const privateKey = '${dynamicValue} SnE84qGioc4Js';
     if (msg.trim() !== "") {
       const message = {
         senderId: sender.id,
@@ -150,15 +159,27 @@ const Chat = (props) => {
         senderName: "joe",
         recipientName: "harry",
         content: msg,
+        hash: msg,
         timestamp: new Date(),
       };
-      stompClient.send("/app/chat", {}, JSON.stringify(message));
-    
+      const encryptedMsg = CryptoJS.AES.encrypt(JSON.stringify(msg), privateKey).toString();
+      const hashMsg = Base64.stringify(hmacSHA512(encryptedMsg, privateKey));
+      const message1 = {
+          senderId: sender.id,
+          recipientId: receiver.id,
+          senderName: "joe",
+          recipientName: "harry",
+          content: encryptedMsg,
+          hash: hashMsg,
+          timestamp: new Date(),
+      };
+      stompClient.send("/app/chat", {}, JSON.stringify(message1));
+
       const newMessages = [...messages];
       newMessages.push(message);
-      console.log("Newmssg: " , newMessages);
+      console.log("New msg: " , newMessages);
       setMessages(newMessages);
-
+      console.log("This is the new message")
       const newChatMessages = [...chatMssgs];
       newChatMessages.push(message);
       setMessages(newChatMessages);

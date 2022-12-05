@@ -5,14 +5,12 @@ import com.example.ping.model.ChatMessage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class ChatUtil {
 
     static HashMap<String, ChatMessage> chatData;
-
-    public static void addMessage(ChatMessage chatMessage) {
-
-    }
+    static HashMap<String, String> sessionIdMap;
 
     public static void initialize() {
         if (chatData == null || chatData.isEmpty()) {
@@ -21,11 +19,15 @@ public class ChatUtil {
     }
 
     public static String generateChatId(ChatMessage chatMessage) {
+        // client1 -> client2. single chatId till session ends.
 //        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 //        Date now = new Date();
 //        String chatId = formatter.format(now).replaceAll("-", "_")
 //                .replaceAll(":", "_").replace(".", "_");
 //        return chatId;
+        // 1_2 and 2_1
+
+        UUID.randomUUID().toString();
         return String.format("%s_%s", chatMessage.getSenderId(), chatMessage.getRecipientId());
     }
 

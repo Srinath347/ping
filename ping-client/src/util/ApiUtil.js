@@ -151,7 +151,7 @@ export function findIdleUsers(id) {
   // }
 
   return request({
-    url: CHAT_SERVICE + "/idle-users" ,
+    url: CHAT_SERVICE + "/idle_users" ,
     method: "GET",
   });
 }
