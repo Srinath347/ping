@@ -1,6 +1,7 @@
 package com.example.ping.controller;
 
 import com.example.ping.model.User;
+import com.example.ping.model.UserBasic;
 import com.example.ping.model.VerifyUser;
 import com.example.ping.service.UserSignInService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,8 @@ public class UserAuthController {
 
     @GetMapping("/verify")
     @ResponseBody
-    public ResponseEntity<List<User>> verifyUserSignature(@RequestBody VerifyUser verifyUser) {
-        List<User> users = userSignInService.verify(verifyUser);
+    public ResponseEntity<List<UserBasic>> verifyUserSignature(@RequestBody VerifyUser verifyUser) {
+        List<UserBasic> users = userSignInService.verify(verifyUser);
         if (users == null) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED, "Unauthorized user");
