@@ -5,6 +5,7 @@ import Signup from "./signup/Signup";
 import Profile from "./profile/Profile";
 import Chat from "./chat/Chat";
 import Users from "./users/Users";
+import Verify from "./Verify/Verify";
 import "./App.css";
 
 export const AppContext = React.createContext();
@@ -13,18 +14,18 @@ const App = (props) => {
     <div className="App">
       <BrowserRouter>
         <Switch>
-          <Route exact path="/" render={(props) => <Users {...props} />} />
+          <Route exact path="/" render={(props) => <Verify {...props} />} />
           <Route
             exact
-            path="/login"
+            path="/chat"
             render={(props) => <Signin {...props} />}
           />
           <Route
             exact
-            path="/signup"
-            render={(props) => <Signup {...props} />}
+            path="/users"
+            render={(props) => <Users {...props} />}
           />
-          <Route exact path="/chat" render={(props) => <Chat {...props} />} />
+          <Route exact path="/chatroom" render={(props) => <Chat {...props} />} />
         </Switch>
       </BrowserRouter>
     </div>

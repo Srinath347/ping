@@ -40,7 +40,7 @@ const Chat = (props) => {
   useEffect(() => {
     
     if (localStorage.getItem("sender") === null) {
-      props.history.push("/login");
+      props.history.push("/chat");
     }
     console.log("Sender: ", sender);
     console.log("Receiver: ", receiver);
@@ -84,7 +84,7 @@ const Chat = (props) => {
         message: "Error",
         description: "Error updating user status",
       });
-      props.history.push("/login");
+      props.history.push("/chat");
     });
   }
 
@@ -133,12 +133,13 @@ const Chat = (props) => {
           let count = parseInt(sessionStorage.getItem("byeCount") || 0);
           sessionStorage.setItem("byeCount", count+1);
         }
-        closeConnection();
+        
         const newMessages = JSON.parse(sessionStorage.getItem("chatMessages") || "[]");
         console.log("Messages : " , newMessages);
         newMessages.push(formattedMessage);
         setMessages(newMessages);
         sessionStorage.setItem("chatMessages", JSON.stringify(newMessages));
+        closeConnection();
     }
   };
 
@@ -147,8 +148,8 @@ const Chat = (props) => {
       const message = {
         senderId: sender.id,
         recipientId: receiver.id,
-        senderName: "joe",
-        recipientName: "harry",
+        senderName: sender.firstName + " " + sender.lastName,
+        recipientName: receiver.firstName + " " + receiver.lastName,
         content: msg,
         timestamp: new Date(),
       };
@@ -187,7 +188,7 @@ const Chat = (props) => {
       setMessages([]);
       setChatMssgs([]);
       localStorage.clear()
-      props.history.push("/login")
+      props.history.push("/")
     }
   }
 

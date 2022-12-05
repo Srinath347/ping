@@ -12,7 +12,7 @@ const Profile = (props) => {
   const [currentUser, setLoggedInUser] = useRecoilState(loggedInUser);
   useEffect(() => {
     if (localStorage.getItem("accessToken") === null) {
-      props.history.push("/login");
+      props.history.push("/");
     }
     loadCurrentUser();
   }, []);
@@ -29,7 +29,7 @@ const Profile = (props) => {
 
   const logout = () => {
     localStorage.removeItem("accessToken");
-    props.history.push("/login");
+    props.history.push("/");
   };
 
   return (

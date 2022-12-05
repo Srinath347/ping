@@ -22,7 +22,7 @@ const Signup = (props) => {
           description:
             "Thank you! You're successfully registered. Please Login to continue!",
         });
-        props.history.push("/login");
+        props.history.push("/");
         setLoading(false);
       })
       .catch((error) => {

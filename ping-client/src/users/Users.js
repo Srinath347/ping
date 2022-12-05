@@ -8,14 +8,19 @@ const Users = (props) => {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        getUsers();
+        if (localStorage.getItem("authorized") == null) {
+            props.history.push("/");
+        } else {
+            getUsers();
+        }
       }, []);
 
     const getUsers = () => {
         findIdleUsers().then((response) => {
             console.log("response", response);
             setUsers(response);
-            // localStorage.setItem("sender", JSON.stringify(response));
+            
+            localStorage.setItem("idleUsers", JSON.stringify(response));
             // localStorage.setItem("receiver", JSON.stringify(response));
             // setLoading(false);
             // props.history.push("/chat");
@@ -28,7 +33,7 @@ const Users = (props) => {
     }
 
     const login = () => {
-        props.history.push("/login");
+        props.history.push("/chat");
     }
 
   return (
