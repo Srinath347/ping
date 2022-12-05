@@ -1,100 +1,46 @@
 package com.example.ping.util;
 
-import com.example.ping.model.User;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.crypto.Cipher;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 public class Client {
 
-    static HashMap<Integer, User> userData;
+    private static String keyFilePath = "/Users/srinath/Desktop/privateKeys/%s.key";
 
-    public static List<User> getAllUsers() {
-        if (userData.isEmpty()) {
-            initialize();
+    public static void main(String[] args) throws Exception {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        String firstName = bufferedReader.readLine();
+        String nonce = bufferedReader.readLine();
+        decrypt(firstName, nonce);
+    }
+
+    private static Integer decrypt(String firstName, String nonce) {
+        try {
+            String fileName = String.format(keyFilePath, firstName);
+            System.out.println("Fetching key from: "+ fileName);
+            File privateKeyFile = new File(fileName);
+            byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privateKeyBytes);
+            PrivateKey privateKey = keyFactory.generatePrivate(spec);
+            Cipher decryptCipher = Cipher.getInstance("RSA");
+            decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] secretMessageBytes = nonce.getBytes(StandardCharsets.UTF_8);
+            byte[] decryptedMessageBytes = decryptCipher.doFinal(secretMessageBytes);
+            String decryptedMessage = new String(decryptedMessageBytes, StandardCharsets.UTF_8);
+            System.out.println(decryptedMessage);
+        } catch (Exception exception) {
+            System.out.println("Unable to decrypt the message "+ exception.getLocalizedMessage());
         }
-        return new ArrayList<>(userData.values());
+        return 1;
     }
-
-    private static void initialize() {
-
-        System.out.println("Initializing user data");
-        userData = new HashMap<>();
-        userData.put(1, userBuilder("john", "doe" ));
-        userData.put(2, userBuilder("Srinath", "Reddy" ));
-        userData.put(3, userBuilder("Sanjana", "Thomas" ));
-        userData.put(4, userBuilder("Mathew", "Shejo" ));
-        userData.put(5, userBuilder("Aishwarya", "Donekal"));
-        System.out.println("user data initialized: " + userData.toString());
-    }
-
-    private static User userBuilder(String firstName, String lastName) {
-        return User.builder()
-                .firstName(firstName)
-                .lastName(lastName)
-                .isIdle(true)
-                .privateKey(getPrivateKey(firstName))
-                .publicKey(getSecretKey(lastName))
-                .secret(getSecretKey(firstName))
-                .build();
-    }
-
-    public static List<User> getAllIdleUsers() {
-        return userData.values().stream().filter(User::isIdle).collect(Collectors.toList());
-    }
-
-    public static void setUserStatus(int id, boolean status) {
-        if (!userData.containsKey(id)) {
-            System.out.println("User not found");
-            return;
-        }
-        User user = userData.get(id);
-        user.setIdle(status);
-        userData.put(id, user);
-    }
-
-    private static String getPrivateKey(String firstName) {
-
-        switch (firstName) {
-            case "Srinath":
-            case "Sanjana":
-            case "Mathew":
-            case "Aishwarya":
-            case "John":
-            default:
-                System.out.println("User not found");
-        }
-        return "";
-    }
-
-    private static String getPublicKey(String firstName) {
-
-        switch (firstName) {
-            case "Srinath":
-            case "Sanjana":
-            case "Mathew":
-            case "Aishwarya":
-            case "John":
-            default:
-                System.out.println("User not found");
-        }
-        return "";
-    }
-
-    private static String getSecretKey(String firstName) {
-        switch (firstName) {
-            case "Srinath":
-            case "Sanjana":
-            case "Mathew":
-            case "Aishwarya":
-            case "John":
-            default:
-                System.out.println("User not found");
-        }
-        return "";
-    }
-
-
 }
