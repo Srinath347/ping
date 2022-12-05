@@ -3,7 +3,7 @@ package com.example.ping.controller;
 import com.example.ping.exception.PingErrorResponse;
 import com.example.ping.model.ChatMessage;
 import com.example.ping.model.User;
-import com.example.ping.model.UserBasic;
+import com.example.ping.model.User;
 import com.example.ping.util.Client;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @Controller
 public class UserController {
 
-    @GetMapping("/idle-users")
+    @GetMapping("/idle_users")
     public ResponseEntity<?> getAllIdleUsers() {
         return ResponseEntity
                 .ok(Client.getAllIdleUsers());
@@ -35,7 +35,7 @@ public class UserController {
 
     @GetMapping("/verify/{recipientId}")
     public ResponseEntity<?> verifyValidUser( @PathVariable int recipientId) {
-        UserBasic user = Client.verifyValidUser(recipientId);
+        User user = Client.verifyValidUser(recipientId);
 
         if(user == null) {
             PingErrorResponse errorResponse = new PingErrorResponse();
@@ -49,7 +49,7 @@ public class UserController {
 
     @PutMapping("/status/{id}/{status}")
     public ResponseEntity<?> updateUserStatus( @PathVariable int id, @PathVariable String status) {
-        UserBasic user = Client.updateUserStatus(id, status);
+        User user = Client.updateUserStatus(id, status);
 
         if(user == null) {
             PingErrorResponse errorResponse = new PingErrorResponse();

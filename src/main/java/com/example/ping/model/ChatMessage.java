@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 
 import java.util.Date;
 
@@ -13,8 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 public class ChatMessage {
-    @Id
-    private String id;
+
     private String chatId;
     private String senderId;
     private String content;
@@ -23,4 +21,5 @@ public class ChatMessage {
     private String recipientId;
     private String senderName;
     private String recipientName;
+    private String hash;
 }

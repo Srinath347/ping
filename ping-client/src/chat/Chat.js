@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Button, notification } from "antd";
+import { Button, message, notification } from "antd";
+import hmacSHA512 from 'crypto-js/hmac-sha512';
+import Base64 from 'crypto-js/enc-base64';
 
 import {
   getUsers,
@@ -15,6 +17,8 @@ import ScrollToBottom from "react-scroll-to-bottom";
 import "./Chat.css";
 
 var stompClient = null;
+var CryptoJS = require("crypto-js");
+const dynamicValue = '12/05/2022';
 const Chat = (props) => {
   const [text, setText] = useState("");
   // const [contacts, setContacts] = useState([]);
@@ -77,18 +81,23 @@ const Chat = (props) => {
 
   const onMessageReceived = (msg) => {
     const chat = JSON.parse(msg.body);
-    console.log("messge received: " + chat);
+    const privateKey = '${dynamicValue} SnE84qGioc4Js';
+    console.log("received encrypted message: "+ chat.content);
     if (receiver.id == chat.senderId) {
-        const message = chat.content;
+        const hashMsg = Base64.stringify(hmacSHA512(chat.content, privateKey));
+        if (hashMsg !== chat.hash)  {
+            console.log("Security Breach!! Hash authentication failed");
+        }
+        const bytes = CryptoJS.AES.decrypt(chat.content, privateKey);
+        const message = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
         const formattedMessage = {
           senderId: chat.senderId,
           recipientId: chat.recipientId,
           senderName: sender.firstName + " " + sender.lastName,
           recipientName: receiver.firstName + " " + receiver.lastName,
-          content: chat.content,
+          content: message,
           timestamp: chat.timestamp,
         };
-        
         if(message.toLowerCase() == "bye") {
           stompClient.unsubscribe(msg.headers.subscription);
           let count = parseInt(sessionStorage.getItem("byeCount") || 0);
@@ -104,6 +113,7 @@ const Chat = (props) => {
   };
 
   const sendMessage = (msg) => {
+  const privateKey = '${dynamicValue} SnE84qGioc4Js';
     if (msg.trim() !== "") {
       const message = {
         senderId: sender.id,
@@ -111,14 +121,26 @@ const Chat = (props) => {
         senderName: sender.firstName + " " + sender.lastName,
         recipientName: receiver.firstName + " " + receiver.lastName,
         content: msg,
+        hash: msg,
         timestamp: new Date(),
       };
-      stompClient.send("/app/chat", {}, JSON.stringify(message));
-    
+      const encryptedMsg = CryptoJS.AES.encrypt(JSON.stringify(msg), privateKey).toString();
+      const hashMsg = Base64.stringify(hmacSHA512(encryptedMsg, privateKey));
+      const message1 = {
+          senderId: sender.id,
+          recipientId: receiver.id,
+          senderName: sender.firstName + " " + sender.lastName,
+          recipientName: receiver.firstName + " " + receiver.lastName,
+          content: encryptedMsg,
+          hash: hashMsg,
+          timestamp: new Date(),
+      };
+      console.log("sending encrypted message: "+ message1.content);
+      stompClient.send("/app/chat", {}, JSON.stringify(message1));
+
       const newMessages = [...messages];
       newMessages.push(message);
       setMessages(newMessages);
-
       const newChatMessages = [...chatMssgs];
       newChatMessages.push(message);
       setMessages(newChatMessages);

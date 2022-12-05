@@ -1,7 +1,6 @@
 package com.example.ping.service;
 
-
-import com.example.ping.model.UserBasic;
+import com.example.ping.model.User;
 import com.example.ping.model.VerifyUser;
 import com.example.ping.util.Client;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,10 @@ public class UserSignInService {
 
     public String signIn(String firstName) {
         PublicKey key = Client.getPublicKeyByFirstName(firstName);
+        if (key == null) {
+            System.out.println("Public key not found");
+            return null;
+        }
         Random random = new Random();
         Integer nonce = random.nextInt();
         System.out.println("Random nonce: " + nonce);
@@ -26,12 +29,12 @@ public class UserSignInService {
         return encryptedMessage;
     }
 
-    public List<UserBasic> verify(VerifyUser verifyUser) {
+    public List<User> verify(VerifyUser verifyUser) {
         String firstName = verifyUser.getFirstName();
         String nonce = verifyUser.getNonce();
         String signature = verifyUser.getSignature();
         try {
-            System.out.println(verifyUser.toString());
+            System.out.println(verifyUser);
             Signature publicSignature = Signature.getInstance("SHA256withRSA");
             PublicKey key = Client.getPublicKeyByFirstName(firstName);
             publicSignature.initVerify(key);

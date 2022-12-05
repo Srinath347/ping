@@ -5,14 +5,12 @@ import com.example.ping.model.ChatMessage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class ChatUtil {
 
     static HashMap<String, ChatMessage> chatData;
-
-    public static void addMessage(ChatMessage chatMessage) {
-
-    }
+    static HashMap<String, String> sessionIdMap;
 
     public static void initialize() {
         if (chatData == null || chatData.isEmpty()) {
@@ -20,13 +18,13 @@ public class ChatUtil {
         }
     }
 
-    public static String generateChatId(ChatMessage chatMessage) {
-//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//        Date now = new Date();
-//        String chatId = formatter.format(now).replaceAll("-", "_")
-//                .replaceAll(":", "_").replace(".", "_");
-//        return chatId;
-        return String.format("%s_%s", chatMessage.getSenderId(), chatMessage.getRecipientId());
+    public static String getSessionId(String key, ChatMessage chatMessage) {
+        if (sessionIdMap == null || sessionIdMap.isEmpty()) {
+            sessionIdMap = new HashMap<>();
+        }
+        String sessionId = sessionIdMap.getOrDefault(key, UUID.randomUUID().toString());
+        sessionIdMap.put(key, sessionId);
+        return sessionIdMap.get(key);
     }
 
     public static void save(ChatMessage chatMessage) {
@@ -42,15 +40,6 @@ public class ChatUtil {
             }
         }
         return Optional.empty();
-    }
-
-    public static ChatMessage findChatById(String id) {
-        for(Map.Entry<String, ChatMessage> entry: chatData.entrySet()) {
-            if(entry.getKey() == id) {
-                return entry.getValue();
-            }
-        }
-        return new ChatMessage();
     }
 
 

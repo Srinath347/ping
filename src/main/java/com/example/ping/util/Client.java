@@ -1,7 +1,6 @@
 package com.example.ping.util;
 
 import com.example.ping.model.User;
-import com.example.ping.model.UserBasic;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -48,11 +47,11 @@ public class Client {
                 .build();
     }
 
-    public static List<UserBasic> getAllIdleUsers() {
+    public static List<User> getAllIdleUsers() {
         List<User> idleUsers= new ArrayList<>(userData.values().stream().filter(User::isIdle).collect(Collectors.toList()));
-        List<UserBasic> usersList = new ArrayList<>();
+        List<User> usersList = new ArrayList<>();
         idleUsers.stream().forEach(idleUser -> {
-            UserBasic user = new UserBasic();
+            User user = new User();
             user.setId(idleUser.getId());
             user.setIdle(idleUser.isIdle());
             user.setFirstName(idleUser.getFirstName());
@@ -62,8 +61,8 @@ public class Client {
         return usersList;
     }
 
-    public static UserBasic verifyValidUser(int id) {
-        UserBasic validUser = new UserBasic();
+    public static User verifyValidUser(int id) {
+        User validUser = new User();
         if(userData.containsKey(id)) {
             if(userData.get(id).isIdle()) {
                 User user = userData.get(id);
@@ -77,8 +76,8 @@ public class Client {
         return null;
     }
 
-    public static UserBasic updateUserStatus(int id, String status) {
-        UserBasic validUser = new UserBasic();
+    public static User updateUserStatus(int id, String status) {
+        User validUser = new User();
 
         if(userData.containsKey(id)) {
             User user = userData.get(id);
@@ -108,8 +107,8 @@ public class Client {
         userData.put(id, user);
     }
 
-    public static UserBasic getUserById(int id) {
-        UserBasic validUser = new UserBasic();
+    public static User getUserById(int id) {
+        User validUser = new User();
         if(userData.containsKey(id)) {
             User user = userData.get(id);
             validUser.setId(id);
@@ -119,47 +118,6 @@ public class Client {
             return validUser;
         }
         return validUser;
-    }
-
-    private static String getPrivateKey(String firstName) {
-
-        switch (firstName) {
-            case "Srinath":
-            case "Sanjana":
-            case "Mathew":
-            case "Aishwarya":
-            case "John":
-            default:
-                System.out.println("User not found");
-        }
-        return "";
-    }
-
-    private static String getPublicKey(String firstName) {
-
-        switch (firstName) {
-            case "Srinath":
-            case "Sanjana":
-            case "Mathew":
-            case "Aishwarya":
-            case "John":
-            default:
-                System.out.println("User not found");
-        }
-        return "";
-    }
-
-    private static String getSecretKey(String firstName) {
-        switch (firstName) {
-            case "Srinath":
-            case "Sanjana":
-            case "Mathew":
-            case "Aishwarya":
-            case "John":
-            default:
-                System.out.println("User not found");
-        }
-        return "";
     }
 
     public static PublicKey getPublicKeyByFirstName(String firstName) {
