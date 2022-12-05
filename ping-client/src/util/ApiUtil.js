@@ -146,13 +146,28 @@ export function getUserById(id) {
 }
 
 export function findIdleUsers(id) {
-  // if (!localStorage.getItem("sender")) {
-  //   return Promise.reject("No access token set.");
-  // }
 
   return request({
     url: CHAT_SERVICE + "/idle_users" ,
     method: "GET",
   });
 }
+
+export function verifyUser(username) {
+  
+  return request({
+    url: AUTH_SERVICE + "/auth/" + username ,
+    method: "GET",
+  });
+}
+
+export function getUserByName(username) {
+  
+  return request({
+    url: CHAT_SERVICE + "/user/username/" + username ,
+    method: "GET",
+  });
+}
+
+
 

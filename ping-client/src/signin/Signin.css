@@ -25,3 +25,13 @@
   color: white !important;
   font-weight: 700 !important;
 }
+
+.select-dropdown {
+  margin-bottom: 30px;
+  width: 200px;
+  font-size: large;
+}
+
+.dynamic-dropdown {
+  margin-bottom: 25px;
+}

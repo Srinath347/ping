@@ -1,107 +1,119 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Button, Divider, notification } from "antd";
-import {
-  UserOutlined,
-  LockOutlined,
-  DingtalkOutlined,
-  FacebookFilled,
-} from "@ant-design/icons";
+import { Form, Button, notification } from "antd";
 import { useRecoilValue, useRecoilState } from "recoil";
 import {
   chatMessages,
 } from "../atom/globalState";
-import { login, facebookLogin, findValidUser, getUserById } from "../util/ApiUtil";
+import { findValidUser, getUserById, getUserByName, findIdleUsers } from "../util/ApiUtil";
 import "./Signin.css";
 
-/*global FB*/
 
 const Signin = (props) => {
   const [loading, setLoading] = useState(false);
-  const [senderUser, setSenderUser] = useState("");
-  const [validSender, setValidSender] = useState(true);
-  const [validReceiver, setValidReceiver] = useState(true);
-  const [facebookLoading, setFacebookLoading] = useState(false);
-  const [test, setTest] = useState(localStorage.getItem("accessToken"));
+  const [senderDetails, setSenderDetails] = useState([]);
+  const [selectedSender, setSelectedSender] = useState("");
+  const [selectedReceiver, setselectedReceiver] = useState("");
   const [messages, setMessages] = useRecoilState(chatMessages);
-
+  const [users, setUsers] = useState([]);
+  const send = localStorage.getItem("senderFirstName") || "";
+  let senderId = 0;
   useEffect(() => {
-    // if (localStorage.getItem("sender") !== null) {
-    //   props.history.push("/");
-    // }
+    getUsers();
+    getSenderDetails();
     setMessages([]);
   }, []);
 
+  const getUsers = () => {
+    findIdleUsers().then((response) => {
+        setUsers(response);
+        localStorage.setItem("idleUsers", JSON.stringify(response));
+      }).catch((error) => {
+        notification.error({
+          message: "Error",
+          description: "Something happened!!",
+        });
+      });
+}
+
+
+  const getSenderDetails = () => {
+    getUserByName(send).then((response) => {
+
+      senderId = response.id;
+    }).catch(error => {
+      notification.error({
+        message: "Error",
+        description: "Sender not available",
+      });
+    }); 
+  };
 
   const verifyUser = (values, userType)  => {
-    getUserById(values.senderId).then((response) => {
-      console.log("response", response);
+    getUserByName(send).then((response) => {
+    
+    getUserById(response.id).then((response) => {
       localStorage.setItem("sender", JSON.stringify(response));
-        // localStorage.setItem("sender", JSON.stringify(response));
-        // localStorage.setItem("receiver", JSON.stringify(response));
-        // setLoading(false);
-        // props.history.push("/chat");
 
-      findValidUser(values.receiverId).then((response) => {
-        console.log("response", response);
-        
-        // localStorage.setItem("sender", JSON.stringify(response));
+      findValidUser(selectedReceiver).then((response) => {
+      
         localStorage.setItem("receiver", JSON.stringify(response));
         setLoading(false);
-        props.history.push("/chat");
+        props.history.push("/chatroom");
       }).catch((error) => {
         notification.error({
           message: "Error",
           description: "Receiver not available",
         });
       });
-    })
-    // .catch((error) => {
-    //   notification.error({
-    //     message: "Error",
-    //     description: "Sender not available",
-    //   });
-    // });
+    });
+  }).catch((error) => {
+    notification.error({
+      message: "Error",
+      description: "Sender not available",
+    });
+  });
   }
 
   const onFinish = async (values) => {
-    console.log("values" , values);
     setLoading(true);
     verifyUser(values, "sender");
     setLoading(false);
   };
 
+  const setSender = (e) => {
+    setSelectedSender(e.target.value);
+  }
+
+  const setReceiver = (e) => {
+    setselectedReceiver(e.target.value);
+  }
+
 
   return (
     <div className="login-container">
-      {/* <DingtalkOutlined style={{ fontSize: 50 }} /> */}
       <Form
         name="normal_login"
         className="login-form"
         initialValues={{ remember: true }}
         onFinish={onFinish}
       >
-        <Form.Item
-          name="senderId"
-          rules={[{ required: true, message: "Please input your user id!" }]}
-        >
-          <Input
-            size="large"
-            prefix={<UserOutlined className="site-form-item-icon" />}
-            placeholder="user id"
-          />
-        </Form.Item>
-        
-        <Form.Item
-          name="receiverId"
-          rules={[{ required: true, message: "Please input receiver user id!" }]}
-        >
-          <Input
-            size="large"
-            prefix={<UserOutlined className="site-form-item-icon" />}
-            // type="password"
-            placeholder="user id"
-          />
-        </Form.Item>
+       
+      <div className="dynamic-dropdown">
+          <select className="select-dropdown"
+            value={selectedSender}
+            onChange={setSender}
+          >
+            <option value="">Please select Sender</option>
+            <option value={senderDetails.id} key={senderDetails?.id}>{send}</option>
+          </select>
+          <br />
+          <select className="select-dropdown" value={selectedReceiver} onChange={setReceiver}>
+            <option value="">Please select Receiver</option>
+            {users?.filter((u) => u.firstName != send).map((user, i) => {
+              return <option value={user.id} key={i}>{user.firstName + " " + user.lastName}</option>;
+            })}
+          </select>
+        </div>
         <Form.Item>
           <Button
             shape="round"
@@ -113,20 +125,6 @@ const Signin = (props) => {
             Enter
           </Button>
         </Form.Item>
-        {/* <Divider>OR</Divider> */}
-        {/* <Form.Item>
-          <Button
-            icon={<FacebookFilled style={{ fontSize: 20 }} />}
-            loading={facebookLoading}
-            className="login-with-facebook"
-            shape="round"
-            size="large"
-            onClick={getFacebookAccessToken}
-          >
-            Log in With Facebook
-          </Button>
-        </Form.Item> */}
-        {/* Not a member yet? <a href="/signup">Sign up</a> */}
       </Form>
     </div>
   );
