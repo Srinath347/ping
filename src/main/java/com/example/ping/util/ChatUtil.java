@@ -18,17 +18,13 @@ public class ChatUtil {
         }
     }
 
-    public static String generateChatId(ChatMessage chatMessage) {
-        // client1 -> client2. single chatId till session ends.
-//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//        Date now = new Date();
-//        String chatId = formatter.format(now).replaceAll("-", "_")
-//                .replaceAll(":", "_").replace(".", "_");
-//        return chatId;
-        // 1_2 and 2_1
-
-        UUID.randomUUID().toString();
-        return String.format("%s_%s", chatMessage.getSenderId(), chatMessage.getRecipientId());
+    public static String getSessionId(String key, ChatMessage chatMessage) {
+        if (sessionIdMap == null || sessionIdMap.isEmpty()) {
+            sessionIdMap = new HashMap<>();
+        }
+        String sessionId = sessionIdMap.getOrDefault(key, UUID.randomUUID().toString());
+        sessionIdMap.put(key, sessionId);
+        return sessionIdMap.get(key);
     }
 
     public static void save(ChatMessage chatMessage) {
@@ -44,15 +40,6 @@ public class ChatUtil {
             }
         }
         return Optional.empty();
-    }
-
-    public static ChatMessage findChatById(String id) {
-        for(Map.Entry<String, ChatMessage> entry: chatData.entrySet()) {
-            if(entry.getKey() == id) {
-                return entry.getValue();
-            }
-        }
-        return new ChatMessage();
     }
 
 

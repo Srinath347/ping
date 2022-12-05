@@ -18,9 +18,8 @@ public class ChatController {
 
     @MessageMapping("/chat")
     public void processMessage(@Payload ChatMessage chatMessage) {
-        String chatId = chatMessageService.getChatId(chatMessage);
+        String chatId = chatMessageService.getSessionId(chatMessage);
         chatMessage.setChatId(chatId);
-        System.out.println("encrypted Message: "+ chatMessage.getContent()+"\n hash:" +chatMessage.getHash());
         messagingTemplate.convertAndSendToUser(
                 chatMessage.getRecipientId(), "/queue/messages", chatMessage);
     }

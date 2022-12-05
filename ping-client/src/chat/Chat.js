@@ -62,24 +62,6 @@ const Chat = (props) => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   // if (activeContact === undefined) return;
-  //   // if(newChat) return;
-  //   // findChatMessages(receiver, sender).then((msgs) =>
-  //   //   setMessages(msgs)
-  //   // );
-  //   // if (messages != null && messages.length > 0) {
-  //   //   isNewChat(false);
-  //   // } 
-  //   // else {
-  //   //   setMessages([]);
-  //   // }
-  //   // console.log("Messsages so far" , messages);
-  //   // loadContacts();
-  // }, 
-  // // [activeContact]
-  // []);
-
   const updateStatus = (id, status) => {
     updateUserStatus(id, status).then((response) => {
       console.log("Updating status of", response);
@@ -102,7 +84,6 @@ const Chat = (props) => {
 
   const onConnected = () => {
     console.log("connected");
-    // console.log(currentUser);
     setSubscription("/user/" + sender.id + "/queue/messages");
     stompClient.subscribe(
       "/user/" + sender.id + "/queue/messages",
@@ -118,7 +99,7 @@ const Chat = (props) => {
 
     const chat = JSON.parse(msg.body);
     const privateKey = '${dynamicValue} SnE84qGioc4Js';
-    console.log("message received: " + sender.id, chat.senderId);
+    console.log("received encrypted message: "+ chat.content);
     if (receiver.id == chat.senderId) {
         const hashMsg = Base64.stringify(hmacSHA512(chat.content, privateKey));
         if (hashMsg !== chat.hash)  {
@@ -134,7 +115,6 @@ const Chat = (props) => {
           content: message,
           timestamp: chat.timestamp,
         };
-        console.log("message: ", message);
         if(message.toLowerCase() == "bye") {
           console.log("unsubscribing", msg.headers.subscription);
           stompClient.unsubscribe(msg.headers.subscription);
@@ -156,8 +136,8 @@ const Chat = (props) => {
       const message = {
         senderId: sender.id,
         recipientId: receiver.id,
-        senderName: "joe",
-        recipientName: "harry",
+        senderName: sender.firstName + " " + sender.lastName,
+        recipientName: receiver.firstName + " " + receiver.lastName,
         content: msg,
         hash: msg,
         timestamp: new Date(),
@@ -167,25 +147,22 @@ const Chat = (props) => {
       const message1 = {
           senderId: sender.id,
           recipientId: receiver.id,
-          senderName: "joe",
-          recipientName: "harry",
+          senderName: sender.firstName + " " + sender.lastName,
+          recipientName: receiver.firstName + " " + receiver.lastName,
           content: encryptedMsg,
           hash: hashMsg,
           timestamp: new Date(),
       };
+      console.log("sending encrypted message: "+ message1.content);
       stompClient.send("/app/chat", {}, JSON.stringify(message1));
 
       const newMessages = [...messages];
       newMessages.push(message);
-      console.log("New msg: " , newMessages);
       setMessages(newMessages);
-      console.log("This is the new message")
       const newChatMessages = [...chatMssgs];
       newChatMessages.push(message);
       setMessages(newChatMessages);
-      console.log("newChatMessages: " , newChatMessages);
       sessionStorage.setItem("chatMessages", JSON.stringify(newChatMessages));
-      console.log("chatMssgs: " , chatMssgs);
       printMessages();
       if(message.content.toLowerCase() == "bye") {  
         // count = count +1;
