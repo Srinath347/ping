@@ -98,14 +98,14 @@ const Chat = (props) => {
   const onMessageReceived = (msg) => {
 
     const chat = JSON.parse(msg.body);
-    const privateKey = '${dynamicValue} SnE84qGioc4Js';
+    const secret = '${dynamicValue} b1mylEEnVURSeTPwg51';
     console.log("received encrypted message: "+ chat.content);
     if (receiver.id == chat.senderId) {
-        const hashMsg = Base64.stringify(hmacSHA512(chat.content, privateKey));
+        const hashMsg = Base64.stringify(hmacSHA512(chat.content, secret));
         if (hashMsg !== chat.hash)  {
             console.log("Security Breach!! Hash authentication failed");
         }
-        const bytes = CryptoJS.AES.decrypt(chat.content, privateKey);
+        const bytes = CryptoJS.AES.decrypt(chat.content, secret);
         const message = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
         const formattedMessage = {
           senderId: chat.senderId,
@@ -131,7 +131,7 @@ const Chat = (props) => {
   };
 
   const sendMessage = (msg) => {
-  const privateKey = '${dynamicValue} SnE84qGioc4Js';
+    const secret = '${dynamicValue} b1mylEEnVURSeTPwg51';
     if (msg.trim() !== "") {
       const message = {
         senderId: sender.id,
@@ -142,8 +142,8 @@ const Chat = (props) => {
         hash: msg,
         timestamp: new Date(),
       };
-      const encryptedMsg = CryptoJS.AES.encrypt(JSON.stringify(msg), privateKey).toString();
-      const hashMsg = Base64.stringify(hmacSHA512(encryptedMsg, privateKey));
+      const encryptedMsg = CryptoJS.AES.encrypt(JSON.stringify(msg), secret).toString();
+      const hashMsg = Base64.stringify(hmacSHA512(encryptedMsg, secret));
       const message1 = {
           senderId: sender.id,
           recipientId: receiver.id,
