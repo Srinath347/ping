@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Button, message } from "antd";
+import { Button, message, notification } from "antd";
+
 import {
   getUsers,
   countNewMessages,
   findChatMessages,
   findChatMessage,
+  updateUserStatus
 } from "../util/ApiUtil";
 import { useRecoilValue, useRecoilState } from "recoil";
 import {
@@ -25,18 +27,26 @@ const Chat = (props) => {
   const [activeContact, setActiveContact] = useRecoilState(chatActiveContact);
   const [messages, setMessages] = useRecoilState(chatMessages);
   const [chatMssgs, setChatMssgs] = useRecoilState(chatMessages);
+  const [subscription, setSubscription] = useState("");
   // const currentUser = {
   //   id: localStorage.getItem("senderId"),
 
   // }
-  const sender = localStorage.getItem("senderId");
-  const receiver = localStorage.getItem("receiverId");
+  const sender = JSON.parse(localStorage.getItem("sender"));
+  // const sender = localStorage.getItem("sender");
+  const receiver = JSON.parse(localStorage.getItem("receiver"));
+  const count = sessionStorage.getItem("byeCount") || 0;
 
   useEffect(() => {
-
-    if (localStorage.getItem("senderId") === null) {
+    
+    if (localStorage.getItem("sender") === null) {
       props.history.push("/login");
     }
+    console.log("Sender: ", sender);
+    console.log("Receiver: ", receiver);
+    // updateStatus(sender.id, "busy");
+    updateStatus(receiver.id, "busy");
+    // getUser(receiver)
     connect();
     // loadContacts();
   }, []);
@@ -66,6 +76,18 @@ const Chat = (props) => {
   // // [activeContact]
   // []);
 
+  const updateStatus = (id, status) => {
+    updateUserStatus(id, status).then((response) => {
+      console.log("Updating status of", response);
+    }).catch((error) => {
+      notification.error({
+        message: "Error",
+        description: "Error updating user status",
+      });
+      props.history.push("/login");
+    });
+  }
+
   const connect = () => {
     const Stomp = require("stompjs");
     var SockJS = require("sockjs-client");
@@ -77,8 +99,9 @@ const Chat = (props) => {
   const onConnected = () => {
     console.log("connected");
     // console.log(currentUser);
+    setSubscription("/user/" + sender.id + "/queue/messages");
     stompClient.subscribe(
-      "/user/" + sender + "/queue/messages",
+      "/user/" + sender.id + "/queue/messages",
       onMessageReceived
     );
   };
@@ -91,17 +114,26 @@ const Chat = (props) => {
     console.log("message: ", msg);
     // isNewChat(false);
     const chat = JSON.parse(msg.body);
-    console.log("messge received: " + sender, chat.senderId);
-    if (receiver == chat.senderId) {
-        const message = chat;
+    console.log("messge received: " + sender.id, chat.senderId);
+    if (receiver.id == chat.senderId) {
+        const message = chat.content;
         const formattedMessage = {
           senderId: chat.senderId,
           recipientId: chat.recipientId,
-          senderName: "joe",
-          recipientName: "harry",
+          senderName: sender.firstName + " " + sender.lastName,
+          recipientName: receiver.firstName + " " + receiver.lastName,
           content: chat.content,
           timestamp: chat.timestamp,
         };
+        
+        if(message.toLowerCase() == "bye") {
+          console.log("unsubscribing", msg.headers.subscription);
+          stompClient.unsubscribe(msg.headers.subscription);  
+          // count = count +1;
+          let count = parseInt(sessionStorage.getItem("byeCount") || 0);
+          sessionStorage.setItem("byeCount", count+1);
+        }
+        closeConnection();
         const newMessages = JSON.parse(sessionStorage.getItem("chatMessages") || "[]");
         console.log("Messages : " , newMessages);
         newMessages.push(formattedMessage);
@@ -113,15 +145,15 @@ const Chat = (props) => {
   const sendMessage = (msg) => {
     if (msg.trim() !== "") {
       const message = {
-        senderId: sender,
-        recipientId: receiver,
+        senderId: sender.id,
+        recipientId: receiver.id,
         senderName: "joe",
         recipientName: "harry",
         content: msg,
         timestamp: new Date(),
       };
       stompClient.send("/app/chat", {}, JSON.stringify(message));
-
+    
       const newMessages = [...messages];
       newMessages.push(message);
       console.log("Newmssg: " , newMessages);
@@ -134,8 +166,30 @@ const Chat = (props) => {
       sessionStorage.setItem("chatMessages", JSON.stringify(newChatMessages));
       console.log("chatMssgs: " , chatMssgs);
       printMessages();
+      if(message.content.toLowerCase() == "bye") {  
+        // count = count +1;
+        let count = parseInt(sessionStorage.getItem("byeCount") || 0);
+        sessionStorage.setItem("byeCount", count+1);
+      }
+      closeConnection();
     }
   };
+
+  const closeConnection = () => {
+    let c = parseInt(sessionStorage.getItem("byeCount") || 0);
+    console.log("Closing connection......", c)
+    if(c >= 2) {
+      console.log("Closing connection......", c)
+      updateStatus(receiver.id, "idle");
+      updateStatus(sender.id, "idle");
+      sessionStorage.clear("byeCount")
+      sessionStorage.clear("chatMessages")
+      setMessages([]);
+      setChatMssgs([]);
+      localStorage.clear()
+      props.history.push("/login")
+    }
+  }
 
   const printMessages = () => {
     const mssgs = JSON.parse(sessionStorage.getItem("chatMessages") || "[]");
@@ -173,11 +227,11 @@ const Chat = (props) => {
               class="online"
               alt=""
             /> */}
-            <p>{sender}</p>
+            <p>{sender?.firstName +  " " +sender?.lastName}</p>
             <div id="status-options">
               <ul>
                 <li id="status-online" class="active">
-                  <span class="status-circle"></span> <p>Online</p>
+                  <span className="status-circle"></span> <p>Online</p>
                 </li>
                 <li id="status-away">
                   <span class="status-circle"></span> <p>Away</p>
@@ -221,16 +275,6 @@ const Chat = (props) => {
             ))}
           </ul>
         </div>
-        <div id="bottom-bar">
-          <button id="addcontact">
-            <i class="fa fa-user fa-fw" aria-hidden="true"></i>{" "}
-            <span>Profile</span>
-          </button>
-          <button id="settings">
-            <i class="fa fa-cog fa-fw" aria-hidden="true"></i>{" "}
-            <span>Settings</span>
-          </button>
-        </div>
       </div>
       <div class="content">
         <div class="contact-profile">
@@ -241,7 +285,7 @@ const Chat = (props) => {
           <ul>
             {/* {newChat } */}
             {messages != null && messages.map((msg) => (
-              <li class={msg.senderId === sender ? "sent" : "replies"}>
+              <li class={msg.senderId === sender?.id? "sent" : "replies"}>
                 {/* {msg.senderId !== sender} */}
                 <p>{msg.content}</p>
               </li>

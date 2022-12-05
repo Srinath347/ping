@@ -6,105 +6,70 @@ import {
   DingtalkOutlined,
   FacebookFilled,
 } from "@ant-design/icons";
-import { login, facebookLogin } from "../util/ApiUtil";
+import { useRecoilValue, useRecoilState } from "recoil";
+import {
+  chatMessages,
+} from "../atom/globalState";
+import { login, facebookLogin, findValidUser, getUserById } from "../util/ApiUtil";
 import "./Signin.css";
 
 /*global FB*/
 
 const Signin = (props) => {
   const [loading, setLoading] = useState(false);
+  const [senderUser, setSenderUser] = useState("");
+  const [validSender, setValidSender] = useState(true);
+  const [validReceiver, setValidReceiver] = useState(true);
   const [facebookLoading, setFacebookLoading] = useState(false);
   const [test, setTest] = useState(localStorage.getItem("accessToken"));
+  const [messages, setMessages] = useRecoilState(chatMessages);
 
   useEffect(() => {
-    if (localStorage.getItem("accessToken") !== null) {
-      props.history.push("/");
-    }
-    initFacebookLogin();
+    // if (localStorage.getItem("sender") !== null) {
+    //   props.history.push("/");
+    // }
+    setMessages([]);
   }, []);
 
-  useEffect(() => {
-    initFacebookLogin();
-  }, [test]);
 
-  const initFacebookLogin = () => {
-    window.fbAsyncInit = function () {
-      FB.init({
-        appId: "118319422120166",
-        autoLogAppEvents: true,
-        xfbml: true,
-        version: "v7.0",
+  const verifyUser = (values, userType)  => {
+    getUserById(values.senderId).then((response) => {
+      console.log("response", response);
+      localStorage.setItem("sender", JSON.stringify(response));
+        // localStorage.setItem("sender", JSON.stringify(response));
+        // localStorage.setItem("receiver", JSON.stringify(response));
+        // setLoading(false);
+        // props.history.push("/chat");
+
+      findValidUser(values.receiverId).then((response) => {
+        console.log("response", response);
+        
+        // localStorage.setItem("sender", JSON.stringify(response));
+        localStorage.setItem("receiver", JSON.stringify(response));
+        setLoading(false);
+        props.history.push("/chat");
+      }).catch((error) => {
+        notification.error({
+          message: "Error",
+          description: "Receiver not available",
+        });
       });
-    };
-  };
+    })
+    // .catch((error) => {
+    //   notification.error({
+    //     message: "Error",
+    //     description: "Sender not available",
+    //   });
+    // });
+  }
 
-  const getFacebookAccessToken = () => {
-    setFacebookLoading(true);
-    FB.login(
-      function (response) {
-        if (response.status === "connected") {
-          const facebookLoginRequest = {
-            accessToken: response.authResponse.accessToken,
-          };
-          facebookLogin(facebookLoginRequest)
-            .then((response) => {
-              localStorage.setItem("accessToken", response.accessToken);
-              props.history.push("/");
-              setFacebookLoading(false);
-            })
-            .catch((error) => {
-              if (error.status === 401) {
-                notification.error({
-                  message: "Error",
-                  description: "Invalid credentials",
-                });
-              } else {
-                notification.error({
-                  message: "Error",
-                  description:
-                    error.message ||
-                    "Sorry! Something went wrong. Please try again!",
-                });
-              }
-              setFacebookLoading(false);
-            });
-        } else {
-          console.log(response);
-        }
-      },
-      { scope: "email" }
-    );
-  };
-
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     console.log("values" , values);
     setLoading(true);
-    localStorage.setItem("senderId", values.senderId);
-    localStorage.setItem("receiverId", values.receiverId);
+    verifyUser(values, "sender");
     setLoading(false);
-    props.history.push("/chat");
-    // login(values)
-    //   .then((response) => {
-    //     localStorage.setItem("accessToken", response.accessToken);
-    //     props.history.push("/");
-    //     setLoading(false);
-    //   })
-    //   .catch((error) => {
-    //     if (error.status === 401) {
-    //       notification.error({
-    //         message: "Error",
-    //         description: "Username or Password is incorrect. Please try again!",
-    //       });
-    //     } else {
-    //       notification.error({
-    //         message: "Error",
-    //         description:
-    //           error.message || "Sorry! Something went wrong. Please try again!",
-    //       });
-    //     }
-    //     setLoading(false);
-    //   });
   };
+
 
   return (
     <div className="login-container">
@@ -161,7 +126,7 @@ const Signin = (props) => {
             Log in With Facebook
           </Button>
         </Form.Item> */}
-        Not a member yet? <a href="/signup">Sign up</a>
+        {/* Not a member yet? <a href="/signup">Sign up</a> */}
       </Form>
     </div>
   );

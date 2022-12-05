@@ -8,10 +8,10 @@ const request = (options) => {
     headers.append("Content-Type", "application/json");
   }
 
-  // if (localStorage.getItem("senderId")) {
+  // if (localStorage.getItem("sender")) {
   //   headers.append(
   //     "Authorization",
-  //     "Bearer " + localStorage.getItem("senderId")
+  //     "Bearer " + localStorage.getItem("sender")
   //   );
   // }
 
@@ -64,7 +64,7 @@ export function getCurrentUser() {
 }
 
 export function getUsers() {
-  // if (!localStorage.getItem("senderId")) {
+  // if (!localStorage.getItem("sender")) {
   //   return Promise.reject("No access token set.");
   // }
 
@@ -79,7 +79,7 @@ export function getUsers() {
 }
 
 export function countNewMessages(senderId, recipientId) {
-  if (!localStorage.getItem("senderId")) {
+  if (!localStorage.getItem("sender")) {
     return Promise.reject("No access token set.");
   }
 
@@ -90,7 +90,7 @@ export function countNewMessages(senderId, recipientId) {
 }
 
 export function findChatMessages(senderId, recipientId) {
-  if (!localStorage.getItem("senderId")) {
+  if (!localStorage.getItem("sender")) {
     return Promise.reject("No access token set.");
   }
 
@@ -101,7 +101,7 @@ export function findChatMessages(senderId, recipientId) {
 }
 
 export function findChatMessage(id) {
-  if (!localStorage.getItem("senderId")) {
+  if (!localStorage.getItem("sender")) {
     return Promise.reject("No access token set.");
   }
 
@@ -110,3 +110,49 @@ export function findChatMessage(id) {
     method: "GET",
   });
 }
+
+export function findValidUser(id) {
+  if (!localStorage.getItem("sender")) {
+    return Promise.reject("No access token set.");
+  }
+
+  const url = CHAT_SERVICE + "/verify/" + id;
+  return request({
+    url: CHAT_SERVICE + "/verify/" + id,
+    method: "GET",
+  });
+}
+
+export function updateUserStatus(id, status) {
+  if (!localStorage.getItem("sender")) {
+    return Promise.reject("No access token set.");
+  }
+
+  return request({
+    url: CHAT_SERVICE + "/status/" + id + "/" + status,
+    method: "PUT",
+  });
+}
+
+export function getUserById(id) {
+  // if (!localStorage.getItem("sender")) {
+  //   return Promise.reject("No access token set.");
+  // }
+
+  return request({
+    url: CHAT_SERVICE + "/user/" + id,
+    method: "GET",
+  });
+}
+
+export function findIdleUsers(id) {
+  // if (!localStorage.getItem("sender")) {
+  //   return Promise.reject("No access token set.");
+  // }
+
+  return request({
+    url: CHAT_SERVICE + "/idle-users" ,
+    method: "GET",
+  });
+}
+
