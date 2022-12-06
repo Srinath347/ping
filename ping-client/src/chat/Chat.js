@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, message, notification } from "antd";
 import hmacSHA512 from 'crypto-js/hmac-sha512';
 import Base64 from 'crypto-js/enc-base64';
+import moment from 'moment';
 
 import {
   updateUserStatus
@@ -73,6 +74,7 @@ const Chat = (props) => {
     console.log(err);
   };
 
+  var messagesCountMap = {};
   const onMessageReceived = (msg) => {
     const chat = JSON.parse(msg.body);
     const privateKey = '${dynamicValue} b1mylEEnVURSeTPwg51';
@@ -85,10 +87,30 @@ const Chat = (props) => {
                 message: "Error",
                 description: "Security Breach!! Hash authentication failed",
              });
-             closeConnection();
+             closeCurrConnection();
+        }
+        const currTime = moment(new Date());
+        if (currTime.diff(moment(chat.timestamp), 'minutes') > 2) {
+             console.log("Message delay is greater than 2 minutes");
+             notification.error({
+                    message: "Error",
+                    description: "Message delay is greater than 2 minutes",
+             });
+             closeCurrConnection();
         }
         const bytes = CryptoJS.AES.decrypt(chat.content, privateKey);
         const message = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+        const messageKey = JSON.stringify(message);
+        messagesCountMap[messageKey] = ((messagesCountMap[messageKey]) || 0);
+        messagesCountMap[messageKey] += 1;
+        if (messagesCountMap[messageKey] > 3) {
+             console.log("Detected replay attack, same message has been detected more than thrice");
+             notification.error({
+                    message: "Error",
+                    description: "Detected replay attack, same message has been detected more than thrice",
+             });
+             closeCurrConnection();
+        }
         const formattedMessage = {
           senderId: chat.senderId,
           recipientId: chat.recipientId,
@@ -97,13 +119,11 @@ const Chat = (props) => {
           content: message,
           timestamp: chat.timestamp,
         };
-
         if(message.toLowerCase() == "bye") {
           stompClient.unsubscribe(msg.headers.subscription);
           let count = parseInt(sessionStorage.getItem("byeCount") || 0);
           sessionStorage.setItem("byeCount", count+1);
         }
-        
         const newMessages = JSON.parse(sessionStorage.getItem("chatMessages") || "[]");
         newMessages.push(formattedMessage);
         setMessages(newMessages);
@@ -166,6 +186,17 @@ const Chat = (props) => {
       props.history.push("/")
     }
   }
+
+  const closeCurrConnection = () => {
+      updateStatus(receiver.id, "idle");
+      updateStatus(sender.id, "idle");
+      sessionStorage.clear("byeCount")
+      sessionStorage.clear("chatMessages")
+      setMessages([]);
+      setChatMssgs([]);
+      localStorage.clear()
+      props.history.push("/")
+    }
 
   return (
     <div id="frame">
