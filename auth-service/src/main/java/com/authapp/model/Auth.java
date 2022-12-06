@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Auth {
+
     private String nonce;
     private String signature;
     private String firstName;
-
 }

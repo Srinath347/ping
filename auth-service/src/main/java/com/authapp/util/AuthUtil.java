@@ -17,7 +17,7 @@ import java.security.spec.*;
 @Service
 public class AuthUtil {
 
-        private static String keyFilePath = "/Users/shejomathew/Desktop/ping/privateKeys/%s.key";
+        private static String keyFilePath = "/Users/srinath/Desktop/privateKeys/%s.key";
 
         public static String userSignIn(String userName) throws Exception {
             URL url = new URL("http://localhost:8080/signin/"+userName);

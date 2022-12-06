@@ -18,8 +18,8 @@ public class ChatController {
 
     @MessageMapping("/chat")
     public void processMessage(@Payload ChatMessage chatMessage) {
-        String chatId = chatMessageService.getSessionId(chatMessage);
-        chatMessage.setChatId(chatId);
+        String sessionId = chatMessageService.getSessionId(chatMessage);
+        chatMessage.setChatId(sessionId);
         messagingTemplate.convertAndSendToUser(
                 chatMessage.getRecipientId(), "/queue/messages", chatMessage);
     }
