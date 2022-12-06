@@ -39,6 +39,7 @@ public class UserAuthController {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED, "Unauthorized user");
         }
+        System.out.println("User authentication successful");
         return ResponseEntity.ok(users);
     }
 }
