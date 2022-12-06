@@ -1,7 +1,6 @@
 package com.example.ping.controller;
 
 import com.example.ping.model.User;
-import com.example.ping.model.User;
 import com.example.ping.model.VerifyUser;
 import com.example.ping.service.UserSignInService;
 import org.springframework.beans.factory.annotation.Autowired;

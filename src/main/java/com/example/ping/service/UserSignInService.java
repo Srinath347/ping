@@ -44,7 +44,7 @@ public class UserSignInService {
                 return Client.getAllIdleUsers();
             }
         } catch (Exception e) {
-            System.out.println("Failed to verify user sign"+e.getLocalizedMessage());
+            System.out.println("Failed to verify user sign "+e.getLocalizedMessage());
             return null;
         }
         return null;

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class Client {
 
-    private static String keyFilePath = "/Users/shejomathew/Desktop/ping/keys/%s.key";
+    private static String keyFilePath = "/Users/srinath/Desktop/ping/keys/%s.key";
 
     static HashMap<Integer, User> userData;
 
@@ -31,7 +31,7 @@ public class Client {
 
         System.out.println("Initializing user data");
         userData = new HashMap<>();
-        userData.put(1, userBuilder("john", "doe", 1));
+        userData.put(1, userBuilder("John", "doe", 1));
         userData.put(2, userBuilder("Srinath", "Reddy", 2 ));
         userData.put(3, userBuilder("Sanjana", "Thomas", 3 ));
         userData.put(4, userBuilder("Mathew", "Shejo", 4 ));
