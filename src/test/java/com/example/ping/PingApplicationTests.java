@@ -12,9 +12,4 @@ class PingApplicationTests {
 	void contextLoads() {
 	}
 
-	@Test
-	void RSAKeysGenerator() throws NoSuchAlgorithmException {
-
-	}
-
 }
