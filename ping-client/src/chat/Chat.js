@@ -4,13 +4,10 @@ import hmacSHA512 from 'crypto-js/hmac-sha512';
 import Base64 from 'crypto-js/enc-base64';
 
 import {
-  getUsers,
-  countNewMessages,
   updateUserStatus
 } from "../util/ApiUtil";
 import { useRecoilValue, useRecoilState } from "recoil";
 import {
-  chatActiveContact,
   chatMessages,
 } from "../atom/globalState";
 import ScrollToBottom from "react-scroll-to-bottom";
@@ -21,8 +18,6 @@ var CryptoJS = require("crypto-js");
 const dynamicValue = '12/05/2022';
 const Chat = (props) => {
   const [text, setText] = useState("");
-  // const [contacts, setContacts] = useState([]);
-  // const [activeContact, setActiveContact] = useRecoilState(chatActiveContact);
   const [messages, setMessages] = useRecoilState(chatMessages);
   const [chatMssgs, setChatMssgs] = useRecoilState(chatMessages);
   const [subscription, setSubscription] = useState("");

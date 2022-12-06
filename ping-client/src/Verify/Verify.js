@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Button, Divider, notification } from "antd";
+import { Form, Input, Button, notification } from "antd";
 import { verifyUser } from "../util/ApiUtil";
 import {
     UserOutlined,
@@ -11,7 +11,6 @@ const Verify = (props) => {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        // userSignIn();
       }, []);
 
     const userSignIn = (values) => {
@@ -54,7 +53,6 @@ const Verify = (props) => {
             size="large"
             htmlType="submit"
             className="login-form-button"
-            // loading={loading}
           >
             Enter
           </Button>
