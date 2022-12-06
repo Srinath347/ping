@@ -75,14 +75,19 @@ const Chat = (props) => {
 
   const onMessageReceived = (msg) => {
     const chat = JSON.parse(msg.body);
-    const secret = '${dynamicValue} b1mylEEnVURSeTPwg51';
+    const privateKey = '${dynamicValue} b1mylEEnVURSeTPwg51';
     console.log("received encrypted message: "+ chat.content);
     if (receiver.id == chat.senderId) {
-        const hashMsg = Base64.stringify(hmacSHA512(chat.content, secret));
+        const hashMsg = Base64.stringify(hmacSHA512(chat.content, privateKey));
         if (hashMsg !== chat.hash)  {
             console.log("Security Breach!! Hash authentication failed");
+            notification.error({
+                message: "Error",
+                description: "Security Breach!! Hash authentication failed",
+             });
+             closeConnection();
         }
-        const bytes = CryptoJS.AES.decrypt(chat.content, secret);
+        const bytes = CryptoJS.AES.decrypt(chat.content, privateKey);
         const message = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
         const formattedMessage = {
           senderId: chat.senderId,
@@ -92,6 +97,7 @@ const Chat = (props) => {
           content: message,
           timestamp: chat.timestamp,
         };
+
         if(message.toLowerCase() == "bye") {
           stompClient.unsubscribe(msg.headers.subscription);
           let count = parseInt(sessionStorage.getItem("byeCount") || 0);
@@ -107,7 +113,7 @@ const Chat = (props) => {
   };
 
   const sendMessage = (msg) => {
-    const secret = '${dynamicValue} b1mylEEnVURSeTPwg51';
+    const privateKey = '${dynamicValue} b1mylEEnVURSeTPwg51';
     if (msg.trim() !== "") {
       const message = {
         senderId: sender.id,
@@ -118,8 +124,8 @@ const Chat = (props) => {
         hash: msg,
         timestamp: new Date(),
       };
-      const encryptedMsg = CryptoJS.AES.encrypt(JSON.stringify(msg), secret).toString();
-      const hashMsg = Base64.stringify(hmacSHA512(encryptedMsg, secret));
+      const encryptedMsg = CryptoJS.AES.encrypt(JSON.stringify(msg), privateKey).toString();
+      const hashMsg = Base64.stringify(hmacSHA512(encryptedMsg, privateKey));
       const message1 = {
           senderId: sender.id,
           recipientId: receiver.id,
